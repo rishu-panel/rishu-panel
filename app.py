@@ -1,6 +1,6 @@
 import os, secrets, importlib.util
 from functools import wraps
-from flask import Flask, render_template, request, jsonify, session, Response
+from flask import Flask, render_template, request, jsonify, session
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -38,23 +38,8 @@ bio_mod = load_module("bio_actions", "BiOCheck.py")
 gallery = load_module("gallery_actions", "PROFILE-ITEM-ADDER.py")
 
 
-PANEL_PASSCODE = os.environ.get("PANEL_PASSCODE", "").strip()
-
-@app.before_request
-def passcode_gate():
-    if not PANEL_PASSCODE:
-        return None
-    auth = request.authorization
-    if auth and auth.password == PANEL_PASSCODE:
-        return None
-    return Response(
-        "RISHU CONTROL PANEL - passcode required",
-        401,
-        {"WWW-Authenticate": 'Basic realm="RISHU CONTROL PANEL"'},
-    )
-
-# This lightweight app is intended for one trusted operator on a private machine.
-# Keep it bound to localhost or put it behind HTTPS + authentication before exposing it.
+# The panel is publicly reachable. Each visitor must sign in with their own game account;
+# JWT-protected actions are scoped to that browser session.
 TOKENS = {}
 
 def require_jwt(fn):
@@ -190,5 +175,5 @@ def update_gallery():
         return jsonify(ok=False, error=str(exc)), 400
 
 if __name__ == "__main__":
-    # Do not expose this development server directly to the public internet.
+    # Use Gunicorn for production deployments; this development server is for local use.
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", "5000")), debug=False)
