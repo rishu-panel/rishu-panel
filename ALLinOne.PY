@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# CREATED BY RISHU 👑
+# AYUSH PANEL 👑
 
 import sys
 import requests
@@ -118,7 +118,7 @@ def print_menu():
     print("3. SEND FRIEND REQUEST")
     print("4. REMOVE FRIEND")
     print("0. EXIT")
-    print("CREATED BY RISHU👑")
+    print("AYUSH PANEL 👑")
     print("=" * 50)
 
 def main():
