@@ -90,7 +90,7 @@ def login():
         else:
             return jsonify(ok=False, error="Choose UID/password or access token."), 400
 
-        decoded = major.show_decoded_response(raw)
+        decoded = major.show_decoded_response(raw, verbose=False)
         jwt = decoded.get("jwt") if decoded else None
         if not jwt:
             return jsonify(ok=False, error="MajorLogin response did not contain a JWT."), 502
