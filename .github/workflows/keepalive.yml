@@ -1,0 +1,20 @@
+name: Keep AYUSH panel awake
+on:
+  schedule:
+    - cron: '3,15,27,39,51 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Ping ayushpanel
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --max-time 90 \
+            --output "$RUNNER_TEMP/ayushpanel.html" \
+            --write-out 'HTTP %{http_code}\n' \
+            https://ayushpanel.onrender.com/
