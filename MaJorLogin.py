@@ -15,6 +15,8 @@ Usage:
 Made by Rishu
 """
 
+import contextlib
+import io
 import os
 import sys
 import json
@@ -242,12 +244,18 @@ def token_grant(uid, password):
     if r.status_code != 200:
         raise RuntimeError(f"HTTP {r.status_code}: {r.text[:150]}")
     d = r.json()
+    if not isinstance(d, dict):
+        raise RuntimeError("The game login provider returned an unexpected response.")
     at = d.get("access_token")
     oi = d.get("open_id")
     if not at or not oi:
-        raise RuntimeError(f"missing fields: {d}")
-    ok(f"access_token = {at[:40]}…")
-    ok(f"open_id      = {oi}")
+        error = d.get("error")
+        if error == "auth_error":
+            raise RuntimeError("The game login provider rejected this UID/password sign-in. Check that the account uses a UID/password login method.")
+        if error:
+            raise RuntimeError("The game login provider rejected this sign-in. Check the linked login method or try again later.")
+        raise RuntimeError("The game login provider returned no access token or open ID.")
+
     return at, oi
 
 
@@ -414,7 +422,11 @@ def _fmt_value(f, w, v, raw):
     return repr(v)
 
 
-def show_decoded_response(raw):
+def show_decoded_response(raw, verbose=True):
+    if not verbose:
+        with contextlib.redirect_stdout(io.StringIO()):
+            return show_decoded_response(raw, verbose=True)
+
     print()
     print(f"{BOLD}{C}{'═' * 74}{RST}")
     print(f"{BOLD}{C}  MajorLogin Response  —  {len(raw)} bytes{RST}")
